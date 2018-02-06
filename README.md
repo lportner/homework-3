@@ -2,7 +2,7 @@
 
 Homework-3 assignment
 
-The assignment is explained in HW2.pdf  
+The assignment is explained in HW3.pdf  
 
 Due: Thursday Feb. 8 at 5pm
 By: GitHub submission or email with subject line "710 Homework 3"
