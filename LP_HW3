@@ -1,0 +1,141 @@
+
+
+## Read in budget data
+dat <- read.csv("Data.master/budget.csv.txt", sep = ",")
+names(dat) <- c("date", "description", "category", "amount")
+
+
+###########################
+# 1 - Expenditures summary 
+print(total <- sum(dat$amount))
+
+#  [1] 360.79
+
+bydate <- aggregate(dat$amount, by=list(dat$date), sum)
+#tells you to create an object called bydate. this object aggregates the
+#column dat$amount by the list dat$date and sums the aggregated values
+#because we are only working with one week, it is easy enough to just
+#call the columns that are the week day and sum it up!
+
+print(total_weekday <- sum(bydate[1:4, 2]))
+print(total_weekend <- sum(bydate[5:7, 2]))
+
+#  The Total Expenduture is 360.79 the weekday expenditure is 131.46 the weekend is 229.33 
+
+###########################
+# 2 - Expenditures by date 
+#first, turn each daily spending account into a dataframe
+oct.1 <- dat[1:4,1:4]
+oct.2 <-dat[5,1:4]
+oct.3 <- dat[6:9, 1:4]
+oct.4 <- dat[10:11, 1:4]
+oct.5 <- dat[12:15, 1:4]
+oct.6 <- dat[16:19, 1:4]
+oct.7 <- dat[20:24, 1:4]
+
+#next, sum daily expenditures by category to see how much was spent per day on each category
+        #(some days, had more than one transaction per category)
+oct.1datcat <- aggregate(oct.1$amount, by=list(oct.1$category), sum)
+names(oct.1datcat) <- c("category", "amount")
+oct.1datcat
+
+oct.2datcat <- aggregate(oct.2$amount, by=list(oct.2$category), sum)
+names(oct.2datcat) <- c("category", "amount")
+oct.2datcat
+
+oct.3datcat <- aggregate(oct.3$amount, by=list(oct.3$category), sum)
+names(oct.3datcat) <- c("category", "amount")
+oct.3datcat
+
+oct.4datcat <- aggregate(oct.4$amount, by=list(oct.4$category), sum)
+names(oct.4datcat) <- c("category", "amount")
+oct.4datcat
+
+oct.5datcat <- aggregate(oct.5$amount, by=list(oct.5$category), sum)
+names(oct.5datcat) <- c("category", "amount")
+oct.5datcat
+
+oct.6datcat <- aggregate(oct.6$amount, by=list(oct.6$category), sum)
+names(oct.6datcat) <- c("category", "amount")
+oct.6datcat
+
+oct.7datcat <- aggregate(oct.7$amount, by=list(oct.7$category), sum)
+names(oct.7datcat) <- c("category", "amount")
+oct.7datcat
+
+          ###########################
+          # 3 - report by date 
+         
+          bydate.sum <- aggregate(dat$amount, by=list(dat$date), sum) # total by date
+          bydate.mean <- aggregate(dat$amount, by=list(dat$date), mean) # average by date
+          bydate.max <- aggregate(dat$amount, by=list(dat$date), max)  # max by date
+          names(bydate.sum) <- c("date", "total")
+          names(bydate.mean) <- c("date", "mean")
+          names(bydate.max) <- c("date", "max")
+          
+          report.bydate <- merge( bydate.sum, bydate.mean, by="date")
+          report.bydate <- merge( report.bydate, bydate.max, by="date") # complete report by date
+          
+          ###########################
+          # 4 - statistic summary by category 
+          bycat.sum <- aggregate(dat$amount, by=list(dat$category), sum)
+          bycat.mean <- aggregate(dat$amount, by=list(dat$category), mean)
+          bycat.max <- aggregate(dat$amount, by=list(dat$category), max)
+          
+          names(bycat.sum) <- c("category","total")
+          names(bycat.mean) <- c("category", "mean")
+          names(bycat.max) <- c("category", "max")
+          
+          report.bycategory <- merge( bycat.sum, bycat.mean, by="category")
+          report.bycategory <- merge( report.bycategory, bycat.max, by="category")
+          
+#################################################################
+#5 and 6 - no, so far his spending does not match his budgeting.  for example in the
+          #first month of October, he had already spent over $100 dollars on 
+          #entertainment alone.
+          #Instead of subsetting the dat data frame again, I just used my 
+          #report.bycategory data frame to generate new dataframes with the
+          #subcategory analysis...
+#7- subcategory analysis: food (total, mean, max expenditures)        
+report.byfood <- report.bycategory[c(2,3,5,6),]
+#8- subcategory analysis: entertainment (total, mean, max expenditures)
+report.byentertainment <- report.bycategory[c(1,4),]  
+        
+          ###########################
+          # 9 - plots illustrating problems
+          
+          # this plot shows expenditures by day, the redline shows your spending relative to a $10/day
+            #to sustain a budget of $300 a month
+          pdf(file="LPspendingbyday.pdf")
+          barplot(report.bydate$total, names.arg=report.bydate$date, cex.names = .75)  
+          abline(h=10, col="red", lty=2, lwd=3)
+          dev.off()
+          
+          #this plot shows expenditures by category, the redline shows your spending relative to a $10/day
+            #to sustain a budget of $300 a month
+          pdf(file="LPspendingbycat.pdf")
+          barplot(report.bycategory$total, names.arg = report.bycategory$category, cex.names=.75)
+          abline(h=10, col="red", lty=2, lwd=3)  
+          dev.off()
+        
+          #this plot shows you your entertainment expeditures for the week Oct1-Oct 7, notice them in relation 
+          #to the red line, representing your $100 dollar budget (PER MONTH mind you) for this category of
+          #expenditures
+          pdf(file="LPentertainmentspending.pdf")
+          barplot(report.byentertainment$total, names.arg = report.byentertainment$category)
+          abline(h=100, col="red",lty=2, lwd=3)
+          dev.off()
+          
+          #the plow shows your food expenditures and clearly shows that you spend most of your money
+          #on coffee. which is not actually a food that can sustain your caloric needs (just sayin).
+          pdf(file="LPfoodspending.pdf")
+          barplot(report.byfood$total, names.arg = report.byfood$category)
+          dev.off()
+          ###########################
+          # 10 - save output
+        
+          write.csv(report.bydate, file="LPreport.bydate.csv")
+          write.csv(report.bycategory, file="LPreport.bycategory.csv")
+          write.csv(report.byfood, file="LPreport.byfood.csv")
+          write.csv(report.byentertainment, file="LPreport.byentertainment.csv")
+          
